@@ -1,0 +1,20 @@
+{
+  "name": "restttols",
+  "version": "0.1",
+  "description": "nitrosbasejs",
+  "author": {
+    "name": "Nikita Zaharov aka ix",
+    "email": "ix@2du.ru"
+  },
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "busboy": "^0.2.12",
+    "compression": "^1.6.0",
+    "cookie-parser": "^1.4.0",
+    "debug": "^2.2.0",
+    "express": "^4.13.3",
+    "express-session": "^1.12.1",
+    "formidable": "^1.0.17",
+    "rimraf" : "~2.5.0"
+  }
+}
