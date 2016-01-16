@@ -1,7 +1,9 @@
 {
-  "name": "restttols",
-  "version": "0.1",
-  "description": "nitrosbasejs",
+  "name": "resttools",
+  "version": "0.1.1",
+  "repository" : "https://github.com/ixdu/resttools",
+  "description": "framework and tools for easy to create rest service and to communicate to him",
+  "license" : "LGPL",
   "author": {
     "name": "Nikita Zaharov aka ix",
     "email": "ix@2du.ru"

@@ -1,0 +1,35 @@
+* This is real used tool
+  Initally, this tools is developed for us product(databoom cloud backend). For now it is used in production
+  and because of this is real world project, not another "ideal and innovation" framework.
+
+* For whom?
+  + projects with fully modular achitecture.
+  + small to medium-sized projects. 
+  + projects with minimal dependencies.
+  + projects or sites with clearly and _simple_ api.
+    all requests has human readable format like 'post /boxes/onebox/users/vasya'
+  + relative simplicity, not too simple not too hard.
+
+* How its work?
+  request - create,'boxes/somebox/users/vasya/rights/coolgroup, { access : 'rws' }
+  It's mean - grant 'readwriteexecute' access to user vasya for group coolgroup in 'boxes/somebox/users'
+  Each part path is folder, resource or method(in OOP terminology).
+  + boxes 
+    folder
+  + somebox
+    box resource
+  + users
+    folder
+  + vasya
+    user resource
+  + rights
+    folder
+
+  Folders and resources is objects, implementing the objects you implement the processing of requests  
+
+  This framework can be understood just as CRUD framework, if you don't use modules for expose to HTTP or sockects.
+
+  Client library for working also is modular, can be used locally or with modules for HTTP or sockets.
+
+* Project consist from these things:
++

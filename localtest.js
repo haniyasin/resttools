@@ -1,3 +1,7 @@
+/*
+ * Test and example for the local(direct) rest api without layers like sokets or http
+ */
+
 var path = require('path');
 
 var boxes = require('./modules/boxes'),
