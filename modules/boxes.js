@@ -4,6 +4,8 @@
  */
 
 var resource = require('./resource'),
+    folders = require('./folders'),
+    methods = require('./methods'),
     groups = require('./groups'),
     users = require('./users'),
     status = require('./status');
@@ -12,7 +14,7 @@ function box(name, parent){
   this.fast_init(name, parent);
 }
 
-box.prototype = new resource.type();
+box.prototype = new resource();
 
 //validating box name
 box.prototype._validate = function(name, data, cb){
@@ -20,9 +22,9 @@ box.prototype._validate = function(name, data, cb){
 };
 
 box.prototype._full_init = function(){
-  this.folder_add('boxes', folder);
-  this.folder_add('groups', groups.folder);
-  this.folder_add('users', users.folder);    
+  this.container_add('boxes', folder);
+  this.container_add('groups', groups.folder);
+  this.container_add('users', users.folder);    
 };
 
 function folder(name, parent){
@@ -30,7 +32,7 @@ function folder(name, parent){
     this.folder_init(name, parent);
 }
 
-folder.prototype = new resource.folder();
+folder.prototype = new folders.folder();
 
 folder.prototype._validate = function(name, data){
     return true;  

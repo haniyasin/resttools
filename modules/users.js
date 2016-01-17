@@ -7,59 +7,67 @@
 
 var tokens = require('./tokens'),
     resource = require('./resource'),
+    folders = require('./folders'),
+    methods = require('./methods'),
     status = require('./status');
 
 function user(name, parent){
-    this.fast_init(name, parent);
+  this.fast_init(name, parent);
 }
 
-user.prototype = new resource.type();
+user.prototype = new resource();
 
 user.prototype._dump = function(){
-    return { profile : this.profile };  
+  return { profile : this.profile };  
 };
 
 user.prototype._validate = function(name, profile){
-    return true;
+  return true;
 };
 
-user.prototype._full_init = function(){
-    this.method_add('login', login);    
+user.prototype._full_init = function(){  
+//  this.container_add('methods', methods);
 };
 
-function login(params, cb){
-//    console.log('token is:', str);
-//    console.log('object is:', tokens.parse(str));
-    
-    if(this.profile.password == params.password){
-	//FIXME find all user grops belongs to
-	var user = {
-	    name : this.name,
-	    groups : ['name1', 'name2']
-	};
-	console.log(this.parent.groups.list());
-	cb({
-	       status : status.codes.ok,
-	       token : tokens.generate(user)	    
-	   });
-	return;	
-    }
-     
-     cb({
-	    status : 1,
-	    message : 'password or username is incorrect'
+function methods(name, parent){
+  this.methods_init(name, parent);
+}
+
+methods.prototype = new methods();
+
+methods.prototype.login = function(params, cb){
+  //    console.log('token is:', str);
+  //    console.log('object is:', tokens.parse(str));
+  
+  if(this.profile.password == params.password){
+    //FIXME find all user grops belongs to
+    var user = {
+      name : this.name,
+      groups : ['name1', 'name2']
+    };
+    console.log(this.parent.groups.list());
+    cb({
+	 status : status.codes.ok,
+	 token : tokens.generate(user)	    
+       });
+    return;	
+  }
+  
+  cb({
+       status : 1,
+       message : 'password or username is incorrect'
      });
 };
 
 function folder(name, parent){
-    this.type = user;
-    this.folder_init(name, parent);
+  this.type = user;
+  this.folder_init(name, parent);
 }
 
-folder.prototype = new resource.folder();
+folder.prototype = new folders.folder();
 
 folder.prototype._validate = function(name, data){
-    return true;    
+  return true;    
 };
 
 exports.type = user;

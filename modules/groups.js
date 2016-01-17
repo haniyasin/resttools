@@ -4,20 +4,22 @@
  * delegating rights
  */
 
-var resource = require('./resource');
+var resource = require('./resource'),
+    folders = require('./folders'),
+    methods = require('./methods');
 
 function group(name, parent){
     this.fast_init(name, parent);
 }
 
-group.prototype = new resource.type();
+group.prototype = new resource();
 
 group.prototype._validate = function(name, data){
     return true;
 };
 
 group.prototype._full_init = function(){
-      this.folder_add('users', resource.builtin_folder);  
+      this.container_add('users', folders.builtin_folder);  
 };
 
 function folder(name, parent){
@@ -25,7 +27,7 @@ function folder(name, parent){
     this.folder_init(name, parent);
 }
 
-folder.prototype = new resource.folder();
+folder.prototype = new folders.folder();
 
 folder.prototype._validate = function(name, data){
     return true;  
