@@ -25,11 +25,23 @@
   + rights
     folder
 
-  Folders and resources is objects, implementing the objects you implement the processing of requests  
+  Folders and resources is objects, implementing the objects you implement the processing of requests. 
+  Each object just doing only own job:
+  + box 
+    consist other resources
+  + users
+    consist users
+  + vasya
+    user resource, consist profile and etc
 
-  This framework can be understood just as CRUD framework, if you don't use modules for expose to HTTP or sockects.
+  Each object implements access rights. Its work just like filesystem rights. If you own read right, you
+  can read resource own or consisted resources
 
-  Client library for working also is modular, can be used locally or with modules for HTTP or sockets.
+* service example
+  Simple service for storing and retriving notes
 
 * Project consist from these things:
-+
+  + nodejs modules for creating CRUID services
+  + nodejs modules to wrap CRUID services and to expose as http REST services or services over sockets
+  + client library for browser and nodejs to make multiple requests easier. Its work for HTTP REST, sockets,
+    local access and any HTTP site

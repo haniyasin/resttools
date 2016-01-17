@@ -2,11 +2,12 @@
  * Test and example for the local(direct) rest api without layers like sokets or http
  */
 
-var path = require('path');
+var path = require('path'),
 
-var boxes = require('./modules/boxes'),
-status = require('./modules/status');
-
+    boxes = require('./modules/boxes'),
+    status = require('./modules/status'),
+   
+    cli = require('./cli.js');
 
 function query(root){
   this.root = root;
@@ -56,54 +57,99 @@ query.prototype.process = function(method, token, query, data, cb){
 
 var token = 'admin'; //this is woked for locally linked resources only. Such token will cause an error with query processor
 
-function oncroot(res){
-  console.log('create root status:', res.status);
+function create_root(res, onfinish){
+  var bs = new boxes.folder('boxes');
+  bs.request('create', token, 'root', undefined, function(res){
+	       console.log('create root status:', res.status);
+	       if(res.status != status.codes.ok)
+		 return;
 
-  if(res.status != status.codes.ok)
-    return;
-
-  var root = res.object;
-  console.log(root);
-  root.groups.request('create', token, 'first', undefined, function(res){
-			//		       console.log(res, 'EEEE');
-			root.groups.first.users.request('create', token, 'ix');
-			root.groups.first.rights.request('create', token, 'first', 'rwx');
-			root.rights.request('create', token, 'first', 'r');
-			root.rights.request('create', token, 'second', 'rw');
-		      });
-  
-  //    root.boxes.request('create', token, 'uhaha', undefined, function(res){
-  //			   console.log(res);
-  //			   root.boxes.uhaha.users.request('create', token, 'ix', { email : 'ix@2du.ru', 
-  //										   password : '123'});
-  //			   root.boxes.uhaha.users.request('create', token, 'ixeg', { email : 'ix@2du.ru', 
-  //										     password : '123'});
-  //		       });
-
-  walk_and_print(root, ' ');
+	       var root = res.object;
+	       root.groups.request('create', token, 'first', undefined, function(res){
+				     root.users.request('create', token, 'ix', 
+							{ email : 'ix@2du.ru',
+							  password : '321'});
+				     root.groups.first.users.request('create', token, 'ix');
+				     root.groups.first.rights.request('create', token, 'first', 'rwx');
+				     root.rights.request('create', token, 'first', 'r');
+				     root.rights.request('create', token, 'second', 'rw');
+				   });
+	       
+	       root.boxes.request('create', token, 'uhaha', undefined, function(res){
+	       			    root.boxes.uhaha.users.request('create', token, 'ix', 
+								   { email : 'ix@2du.ru', 
+	       							     password : '123'});
+	       			    root.boxes.uhaha.users.request('create', token, 'ixeg', 
+								   { email : 'ix@2du.ru', 
+	       							     password : '123'});
+	       			  });
+	     });
 }
 
-function onrroot(res){    
-  console.log('read root status:', res.status);
+function print_status(str, res){
+  if(res.status == status.codes.ok)
+    console.log(str +' exist [ok]');
+  else
+    console.log(str + ' exist [failed]');  
+}
 
-  if(res.status != status.codes.ok)
-    return;
+function check1_root(res, onfinish){    
+  var bs = new boxes.folder('boxes');
+  bs.request('read', token, 'root', undefined, function(res){
+	       print_status('root', res);
 
-  var root = res.object;
+	       var root = res.object;
+	       root.groups.request('read', token, 'first', undefined, function(res){
+				     print_status(' first', res);
+				     root.users.request('read', token, 'ix', undefined, function(res){
+							  print_status('   ix', res);
+//							{ email : 'ix@2du.ru',
+//							  password : '321'});			  
+							});
+				     root.groups.first.users.request('read', token, 'ix', undefined, 
+								     function(res){
+								       print_status('   ix', res);
+								     });
+				     root.groups.first.rights.request('read', token, 'first',  undefined, 
+								      function(res){
+									print_status('   first', res);
+								//	'rwx'
+								      });
+				     root.rights.request('read', token, 'first', undefined, function(res){
+							  print_status('   first', res);
+							  // 'r'
+							 });
+				     root.rights.request('read', token, 'second', undefined, function(res){
+							   print_status('   second', res);
+							  // 'rw'
+							 });
+				   });
 
-  //    console.log(res);
-  root.groups.request('read', token, 'first', undefined, function(res){
-			//		       console.log(res, 'EEEE');
-			root.groups.first.users.request('create', token, 'ix');
-			root.groups.first.rights.request('create', token, 'first', 'rwx');
-			root.rights.request('create', token, 'first', 'r');
-			root.rights.request('create', token, 'second', 'rw');
-			root.boxes.rights.request('create', token, 'first', 'r', function(res){
-						    //							  root.rights.request('delete', token,'first', undefined,  function(res){
-						    //									     console.log(res);
-						    //									 });
-						  });
-		      });
+	       root.boxes.request('read', token, 'uhaha', undefined, function(res){
+				    print_status(' uhaha', res);
+	       			    root.boxes.uhaha.users.request('read', token, 'ix', undefined,
+								   function(res){
+								     print_status('   ix', res);
+								     //								   { email : 'ix@2du.ru', 
+//	       							     password : '123'}
+								   });
+	       			    root.boxes.uhaha.users.request('read', token, 'ixeg', undefined,
+								   function(res){
+								     print_status('   ixeg', res);
+//								   { email : 'ix@2du.ru', 
+//	       							     password : '123'}
+								   });
+				  });
+/*
+	       root.groups.request('read', token, 'first', undefined, function(res){
+				     root.groups.first.users.request('create', token, 'ix');
+				     root.groups.first.rights.request('create', token, 'first', 'rwx');
+				     root.rights.request('create', token, 'first', 'r');
+				     root.rights.request('create', token, 'second', 'rw');
+				     root.boxes.rights.request('create', token, 'first', 'r', function(res){
+							       });
+				   });*/
+	     });  
 }
 
 
@@ -115,13 +161,21 @@ function walk_and_print(node, offset){
   }
 }
 
+create_root();
 
-var _boxes = new boxes.folder('boxes');
-_boxes.request('create', token, 'root', undefined, oncroot);
+setTimeout(function(){
+	     console.log('vahaha');
+	     check1_root();
+}, 1000);
+walk_and_print(root, ' ');
+
+/*
+_boxes = new boxes.folder('boxes');
+_boxes.request('create', token, 'root', undefined, modify_root);
 
 _boxes = new boxes.folder('boxes');
-_boxes.request('read', token, 'root', undefined, onrroot);
-
+_boxes.request('read', token, 'root', undefined, check2_root);
+*/
 
 //root.boxes.uhaha.users.ixeg.login({ uhaha : 'uhahatushki'});
 //console.log(root.boxes.uhaha);

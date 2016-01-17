@@ -36,7 +36,6 @@ resource.prototype.fast_init = function(name, parent){
     this.container = {};
     this.parent = parent;
     
-
     this.folder_add('rights', bfolder);
 };
 
@@ -61,11 +60,11 @@ resource.prototype.isexist = function(cb){
 };
  
 resource.prototype.create = function(data, cb){
-    if(!this._t)//FIXME this must be configurable
-	this.full_init();
-
     var self = this;
     fs.mkdir(this.path(), function(e){
+	       if(!this._t)//FIXME this must be configurable
+		 self.full_init();
+
 		 if(e == null)
 		     self.write(data, cb);
 		 else {
@@ -195,7 +194,7 @@ resource.prototype.method_add = function(name, func){
 /////////////////////////////////
 ///Folders api, things like something.boxes, something.rights, where boxes and rights are folders
 resource.prototype.folder_add = function(name, folder){
-    this[name] = new folder(name, this);
+  this[name] = new folder(name, this);
 };
 
 
@@ -209,18 +208,19 @@ function folder(){
 folder.prototype = new resource();
 
 function create_dir_if_none(path){
-    try{
-	fs.mkdirSync(path);
-    } catch (x) {
-//	console.log('dir %s is already exists', path);
-    }    
+  try{
+    //console.log(path);
+    fs.mkdirSync(path);
+  } catch (x) {
+//    console.log(x, path);
+  }    
 }
 
 folder.prototype.folder_init = function(name, parent){
     //FIXME need separate init like e resource
     this.fast_init(name, parent);
-    create_dir_if_none(this.path());
     this.full_init();
+    create_dir_if_none(this.path());
 };
 
 folder.prototype.builtin_request_dispatcher = function(method, name, data, cb){
@@ -236,19 +236,21 @@ folder.prototype.builtin_request_dispatcher = function(method, name, data, cb){
 };
 
 folder.prototype.request = function(method, token, name, data, cb){
-    //FIXME cheking token rights
-    //validating name, data
-    var folder = this;
+  //FIXME cheking token rights
+  //validating name, data
+  var folder = this;
+  
+  function onres(res){
+    if(!res.status && method.match(/create|write|read/))
+      folder[name] = res.object; 
+    if(cb)
+      cb(res);
+  }
 
-    if(typeof this.request_dispatcher == 'function')
-	this.request_dispatcher(method, name, data, cb);
-    else
-	this.builtin_request_dispatcher(method, name, data, function(res){
-					    if(!res.status && method.match(/create|write|read/))
-						folder[name] = res.object; 
-					    if(cb)
-						cb(res);
-					});    	
+  if(typeof this.request_dispatcher == 'function')
+    this.request_dispatcher(method, name, data, onres);
+  else
+    this.builtin_request_dispatcher(method, name, data, onres);
 };
 
 ////////////////////////////////////
