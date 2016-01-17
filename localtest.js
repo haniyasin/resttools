@@ -70,88 +70,149 @@ function create_root(res, onfinish){
 							{ email : 'ix@2du.ru',
 							  password : '321'});
 				     root.groups.first.users.request('create', token, 'ix');
-				     root.groups.first.rights.request('create', token, 'first', 'rwx');
-				     root.rights.request('create', token, 'first', 'r');
-				     root.rights.request('create', token, 'second', 'rw');
+				     root.groups.first.rights.request('create', token, 'first', { access : 'rwx'});
+				     root.rights.request('create', token, 'first', { access : 'r' });
+				     root.rights.request('create', token, 'second', { access : 'rw' });
 				   });
 	       
 	       root.boxes.request('create', token, 'uhaha', undefined, function(res){
 	       			    root.boxes.uhaha.users.request('create', token, 'ix', 
-								   { email : 'ix@2du.ru', 
-	       							     password : '123'});
+								   { email : 'ix@2du.ruu', 
+	       							     password : '3214'});
 	       			    root.boxes.uhaha.users.request('create', token, 'ixeg', 
-								   { email : 'ix@2du.ru', 
-	       							     password : '123'});
+								   { email : 'ix@3du.ru', 
+	       							     password : '1235'});
 	       			  });
 	     });
 }
 
-function print_status(str, res){
-  if(res.status == status.codes.ok)
-    console.log(str +' exist [ok]');
-  else
-    console.log(str + ' exist [failed]');  
+function print_status(str, res, check){
+  console.log(str +', status is [' + status.stringify(res.status) + ']', check ? '[' + check + ']' : '');
 }
 
 function check1_root(res, onfinish){    
+  console.log('cheking tree first time');
   var bs = new boxes.folder('boxes');
   bs.request('read', token, 'root', undefined, function(res){
-	       print_status('root', res);
+	       print_status('root', res, true);
 
 	       var root = res.object;
 	       root.groups.request('read', token, 'first', undefined, function(res){
-				     print_status(' first', res);
 				     root.users.request('read', token, 'ix', undefined, function(res){
-							  print_status('   ix', res);
-//							{ email : 'ix@2du.ru',
-//							  password : '321'});			  
+							  print_status('   ix', res,
+								       res.object.data.email == 'ix@2du.ru' &&
+								       res.object.data.password == '321');
 							});
 				     root.groups.first.users.request('read', token, 'ix', undefined, 
 								     function(res){
-								       print_status('   ix', res);
+								       print_status('   ix', res, true);
 								     });
 				     root.groups.first.rights.request('read', token, 'first',  undefined, 
 								      function(res){
-									print_status('   first', res);
-								//	'rwx'
+									print_status('   first', res,
+										     res.data.access == 'rwx');
 								      });
 				     root.rights.request('read', token, 'first', undefined, function(res){
-							  print_status('   first', res);
-							  // 'r'
+							  print_status('   first', res, 
+								       res.data.access == 'r');
 							 });
 				     root.rights.request('read', token, 'second', undefined, function(res){
-							   print_status('   second', res);
-							  // 'rw'
+							   print_status('   second', res,
+								       res.data.access == 'rw');
 							 });
 				   });
 
 	       root.boxes.request('read', token, 'uhaha', undefined, function(res){
-				    print_status(' uhaha', res);
+				    print_status(' uhaha', res, true);
 	       			    root.boxes.uhaha.users.request('read', token, 'ix', undefined,
 								   function(res){
-								     print_status('   ix', res);
-								     //								   { email : 'ix@2du.ru', 
-//	       							     password : '123'}
+								     print_status('   ix', res,
+										  res.object.data.email == 'ix@2du.ruu' &&
+										  res.object.data.password == '3214');
 								   });
 	       			    root.boxes.uhaha.users.request('read', token, 'ixeg', undefined,
 								   function(res){
-								     print_status('   ixeg', res);
-//								   { email : 'ix@2du.ru', 
-//	       							     password : '123'}
+								     print_status('   ixeg', res,
+										  res.object.data.email == 'ix@3du.ru' &&
+										  res.object.data.password == '1235');
 								   });
 				  });
-/*
-	       root.groups.request('read', token, 'first', undefined, function(res){
-				     root.groups.first.users.request('create', token, 'ix');
-				     root.groups.first.rights.request('create', token, 'first', 'rwx');
-				     root.rights.request('create', token, 'first', 'r');
-				     root.rights.request('create', token, 'second', 'rw');
-				     root.boxes.rights.request('create', token, 'first', 'r', function(res){
-							       });
-				   });*/
 	     });  
 }
 
+function modify_root(res, onfinish){    
+  console.log('modifying tree');
+  var bs = new boxes.folder('boxes');
+  bs.request('read', token, 'root', undefined, function(res){
+	       var root = res.object;
+	       root.groups.request('read', token, 'first', undefined, function(res){
+				     root.users.request('delete', token, 'ix');
+				     root.groups.first.users.request('delete', token, 'ix', undefined);
+				     root.groups.first.rights.request('write', token, 'first', 
+								      { access : 'x'});
+				     root.rights.request('write', token, 'first', { access : 'x'});
+				     root.rights.request('delete', token, 'second', undefined);
+				   });
+
+	       root.boxes.request('read', token, 'uhaha', undefined, function(res){
+	       			    root.boxes.uhaha.users.request('write', token, 'ix', 
+								   { email : 'haha',
+								     signal : 'trulala' });
+	       			    root.boxes.uhaha.users.request('write', token, 'ixeg', 
+								   { nick : 'petya',
+								     login : 'vasya' });
+				  });
+	     });  
+}
+
+function check2_root(res){
+  console.log('cheking modified root');  
+  var bs = new boxes.folder('boxes');
+  bs.request('read', token, 'root', undefined, function(res){
+	       print_status('root', res, true);
+	       var root = res.object;
+	       root.groups.request('read', token, 'first', undefined, function(res){
+				     print_status(' first', res, true);
+				     root.users.request('read', token, 'ix', undefined, function(res){
+							  print_status('  ix', res, 'deleted');
+							});
+				     root.groups.first.users.request('read', token, 'ix', undefined,
+								     function(res){
+								       print_status('  ix', res, 'deleted');
+								     });
+				     root.groups.first.rights.request('read', token, 'first', undefined,
+								      function(res){
+									print_status('  first', res,
+										     res.data.access == 'x');
+								      });
+				     root.rights.request('read', token, 'first', undefined,
+							 function(res){
+							   print_status('  first', res,
+									res.data.access == 'x');
+							 });
+				     root.rights.request('read', token, 'second', undefined,
+							 function(res){
+							   print_status('  first', res, 'deleted');
+							 });
+				   });
+
+	       root.boxes.request('read', token, 'uhaha', undefined, function(res){
+				    print_status(' uhaha', res, true);
+	       			    root.boxes.uhaha.users.request('read', token, 'ix', undefined,
+								   function(res){
+								     print_status('  first', res,
+										  res.object.data.email == 'haha'&&
+										  res.object.data.signal == 'trulala');
+								   }); 
+	       			    root.boxes.uhaha.users.request('read', token, 'ixeg', undefined,
+								   function(res){
+								     print_status('  first', res,
+										  res.object.data.nick == 'petya'&&
+										  res.object.data.login == 'vasya');
+								   }); 
+				  });
+	     });  
+}
 
 function walk_and_print(node, offset){
   console.log(offset + node.name);    
@@ -164,10 +225,17 @@ function walk_and_print(node, offset){
 create_root();
 
 setTimeout(function(){
-	     console.log('vahaha');
 	     check1_root();
 }, 1000);
-walk_and_print(root, ' ');
+
+setTimeout(function(){
+	     modify_root();
+}, 2000);
+
+setTimeout(function(){
+	     check2_root();
+}, 4000);
+//walk_and_print(root, ' ');
 
 /*
 _boxes = new boxes.folder('boxes');

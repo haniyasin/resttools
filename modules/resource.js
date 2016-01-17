@@ -84,67 +84,77 @@ resource.prototype.delete = function(data, cb){
 
 
 resource.prototype.write = function(data, cb, recursive){
-    var self = this;
-//ind, children = this.children;
-//    if(recursive){
-//	for(ind in children){
-//	    children[ind].write(recursive);
-//	}	
-//    }
-    if(this._validate(this.name, data)){
-        this.data = data;	
-	fs.writeFile(path.join(this.path(), 'config.json'), this.dump(), function(){
-			 //may be need error handling
-			 if(cb)
-			     cb({status : status.codes.ok,
-				 object : self});
-		     });
-    } else
-	cb({status : status.code.validation_error,
-	    message: 'this name:' + this.name + ' and this data:' + JSON.stringify(data) + ' have not been validated'});
+  var self = this;
+  //ind, children = this.children;
+  //    if(recursive){
+  //	for(ind in children){
+  //	    children[ind].write(recursive);
+  //	}	
+  //    }
+  if(this._validate(this.name, data)){
+    this.data = data;
+    
+    var filepath = this.path();
+    fs.unlink(filepath, function(){
+		fs.writeFile(path.join(filepath, 'config.json'), self.dump(), function(){
+			       //may be need error handling
+			       if(cb)
+				 cb({status : status.codes.ok,
+				     object : self});
+			     });
+	      });
+  } else
+    cb({status : status.code.validation_error,
+	message: 'this name:' + this.name + ' and this data:' + JSON.stringify(data) + ' have not been validated'});
 };
 
 resource.prototype.read = function(data, cb){
-    var self = this;
-    if(!this._t)
-	this.full_init();
+  var self = this;
+  if(!this._t)
+    this.full_init();
 
-    fs.readFile(path.join(this.path(), 'config.json'), { encoding : 'utf8' },
-		function(err, data){
-		    var object, key;
-		    if(err){
-			cb({ status : status.codes.resource_unexist });
-			return;
-		    }
-			
-		    try{
-			object = JSON.parse(data);	
-		    } catch (x) {
-			console.log(x);
-		    }	 
+  fs.readFile(path.join(this.path(), 'config.json'), { encoding : 'utf8' },
+	      function(err, data){
+		var object, key;
+		if(err){
+		  cb({ status : status.codes.resource_unexist });
+		  return;
+		}
+		
+		try{
+		  object = JSON.parse(data);	
+		} catch (x) {
+		  console.log(x);
+		}	 
 
-		        this.data = object;
-		    if(cb)
-			cb({
-			       status : status.codes.ok,
-			       object : self
-			   });
-		});
+		self.load(object);
+		if(cb)
+		  cb({
+		       status : status.codes.ok,
+		       object : self,
+		     });
+	      });
 };
 
 resource.prototype.dump = function(){
-    var proto_dump = this._dump;
-    var object = proto_dump ? proto_dump.apply(this) : {};
-    
-    object.name = this.name;
-    object.container = this.container;
-    object.data = this.data;
+  var proto_dump = this._dump;
+  var object = proto_dump ? proto_dump.apply(this) : {};
+  
+  object.name = this.name;
+  object.container = this.container;
+  object.data = this.data;
 
-    return JSON.stringify(object);
+  return JSON.stringify(object);
+};
+
+resource.prototype.load = function(object){
+  this.name = object.name;
+  this.container = object.container;
+  this.data = object.data;
 };
 
 resource.prototype.add_child = function(child){
-    this.children.push(child);
+  this.children.push(child);
 };
 
 resource.prototype.remove_child = function(child){
@@ -270,47 +280,47 @@ bfolder.prototype._validate = function(name, data){
 };
 
 bfolder.prototype.request_dispatcher = function(method, name, data, cb){
-    var container = this.parent.container[this.name];
-    if(container.hasOwnProperty(name)){
-	switch(method){
-	case 'write' : 
-	    container[name] = data;
-	    this.parent.write(cb);
-	    break;
+  var container = this.parent.container[this.name];
+  if(container.hasOwnProperty(name)){
+    switch(method){
+    case 'write' : 
+      container[name] = data;
+      this.parent.write(cb);
+      break;
 
-    	case 'delete' : 
-	    delete container[name];
-	    this.parent.write(cb);
-	    break;
-	   
-	case 'read' :
-	    cb({
-		   status : status.codes.ok,
-		   object : container[name]
-	       });
-	    break;
-	}
-    } else {
-	if(method == 'create'){
-//	    console.log(name, this.parent.write);
-	    container[name] = data ? data : true;
-	    this.parent.write(data, cb);	    
-	} else
-	    cb({
-		   status : status.codes.resource_unexist
-	       });    	    	
+    case 'delete' : 
+      delete container[name];
+      this.parent.write(cb);
+      break;
+      
+    case 'read' :
+      cb({
+	   status : status.codes.ok,
+	   data : container[name]
+	 });
+      break;
     }
+  } else {
+    if(method == 'create'){
+      //	    console.log(name, this.parent.write);
+      container[name] = data ? data : true;
+      this.parent.write(data, cb);	    
+    } else
+      cb({
+	   status : status.codes.resource_unexist
+	 });    	    	
+  }
 };
 
 bfolder.prototype.list = function(name, data, cb){
-    var folder_data = this.parent.container[this.name], ind, ret_array = [];
-    for(ind in folder_data)
-	ret_array.unshift(ind);
+  var folder_data = this.parent.container[this.name], ind, ret_array = [];
+  for(ind in folder_data)
+    ret_array.unshift(ind);
 
-    cb({
-	   status : status.codes.ok,
-	   object : 	ret_array
-       });
+  cb({
+       status : status.codes.ok,
+       object : 	ret_array
+     });
 };
 
 exports.type = resource;

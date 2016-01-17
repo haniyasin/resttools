@@ -3,23 +3,30 @@
  */
 
 module.exports = {
-    codes : {
-	ok : 0,
-	invalid_request : 1,
-	resource_unexist : 2,
-	resource_exist : 3,
-	forbidden : 4,
-	validation_error : 5,
-        internal_error : 6
-    },
-    to_http_code : function(code){
-	switch(code){
-	    case 0 :
-	    return 200;
-	    case 1 :
-	    case 2 :
-	    case 3 :
-	    return 401;
-	}
+  codes : {
+    ok : 0,
+    invalid_request : 1,
+    resource_unexist : 2,
+    resource_exist : 3,
+    forbidden : 4,
+    validation_error : 5,
+    internal_error : 6
+  },
+  stringify : function(code){
+    var ind;
+    for(ind in this.codes)
+      if(this.codes[ind] == code)
+	return ind;
+    return 'code is unexist';
+  },
+  to_http_code : function(code){
+    switch(code){
+    case 0 :
+      return 200;
+    case 1 :
+    case 2 :
+    case 3 :
+      return 401;
     }
+  }
 };
