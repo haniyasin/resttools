@@ -1,7 +1,3 @@
-* This is real used tool
-  Initally, this tools is developed for us product(databoom cloud backend). For now it is used in production
-  and because of this is real world project, not another "ideal and innovation" framework.
-
 * For whom?
   + projects with fully modular achitecture.
   + small to medium-sized projects. 
