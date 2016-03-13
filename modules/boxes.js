@@ -27,6 +27,13 @@ box.prototype._full_init = function(){
   this.container_add('users', users.folder);    
 };
 
+box.prototype._write = function(cb){
+  this.boxes.write();
+  this.groups.write();
+  this.users.write();
+  cb();
+};
+
 function folder(name, parent){
   this.type = box;
   this.folder_init(name, parent);

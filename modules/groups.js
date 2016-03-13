@@ -33,5 +33,13 @@ folder.prototype._validate = function(name, data){
     return true;  
 };
 
+//return groups which own user
+folder.prototype.get_by_user = function(username, cb){
+  console.log(this);
+  this.read(null, function(res){
+	      console.log(res);
+	    });
+};
+
 exports.type = group;
 exports.folder = folder;

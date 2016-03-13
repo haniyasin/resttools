@@ -29,34 +29,28 @@ user.prototype._full_init = function(){
 //  this.container_add('methods', methods);
 };
 
-function methods(name, parent){
-  this.methods_init(name, parent);
-}
-
-methods.prototype = new methods();
-
-methods.prototype.login = function(params, cb){
-  //    console.log('token is:', str);
-  //    console.log('object is:', tokens.parse(str));
-  
-  if(this.profile.password == params.password){
-    //FIXME find all user grops belongs to
-    var user = {
-      name : this.name,
-      groups : ['name1', 'name2']
-    };
-    console.log(this.parent.groups.list());
-    cb({
-	 status : status.codes.ok,
-	 token : tokens.generate(user)	    
-       });
-    return;	
+user.prototype.methods = {
+  login : function(data, cb){
+    //    console.log('token is:', str);
+    //    console.log('object is:', tokens.parse(str));
+    this.read(null, function(res){
+		var odata = res.object.data, groups = res.object.parent.parent.groups;
+		if(odata.password == data.password){
+		  //FIXME find all user grops belongs to
+		  //if(res.object.container.groups cheking
+		  groups.get_by_user(this.name, function(groups){
+				     });
+		  cb({
+		       status : status.codes.ok
+//		       token : tokens.generate(user)	    
+		     });
+		} else
+		  cb({
+		       status : status.codes.forbidden,
+		       message : "password or username is incorrect"
+		     });
+	      });
   }
-  
-  cb({
-       status : 1,
-       message : 'password or username is incorrect'
-     });
 };
 
 function folder(name, parent){

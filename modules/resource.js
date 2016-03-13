@@ -42,7 +42,6 @@ resource.prototype.fast_init = function(name, parent){
 resource.prototype.full_init = function(){
     this._t = 'r';    
     this.children = [];
-    this.methods = {};
 
     if(this.parent)
 	this.parent.add_child(this);
@@ -91,21 +90,27 @@ resource.prototype.write = function(data, cb, recursive){
   //	    children[ind].write(recursive);
   //	}	
   //    }
-  if(this._validate(this.name, data)){
-    this.data = data;
-    
-    var filepath = this.path();
-    fs.unlink(filepath, function(){
-		fs.writeFile(path.join(filepath, 'config.json'), self.dump(), function(){
-			       //may be need error handling
-			       if(cb)
-				 cb({status : status.codes.ok,
-				     object : self});
-			     });
-	      });
-  } else
-    cb({status : status.code.validation_error,
-	message: 'this name:' + this.name + ' and this data:' + JSON.stringify(data) + ' have not been validated'});
+  function _write(){
+    if(self._validate(self.name, data)){
+      self.data = data;
+      
+      var filepath = self.path();
+      fs.unlink(filepath, function(){
+		  fs.writeFile(path.join(filepath, 'config.json'), self.dump(), function(){
+				 //may be need error handling
+				 if(cb)
+				   cb({status : status.codes.ok,
+				       object : self});
+			       });
+		});
+    } else
+      cb({status : status.code.validation_error,
+	  message: 'this name:' + self.name + ' and this data:' + JSON.stringify(data) + ' have not been validated'});    
+  }
+  if(this._write)
+    this._write(_write);
+  else
+    _write();		 
 };
 
 resource.prototype.read = function(data, cb){
@@ -113,6 +118,7 @@ resource.prototype.read = function(data, cb){
   if(!this._t)
     this.full_init();
 
+  console.log(this.path());
   fs.readFile(path.join(this.path(), 'config.json'), { encoding : 'utf8' },
 	      function(err, data){
 		var object, key;
@@ -131,9 +137,29 @@ resource.prototype.read = function(data, cb){
 		if(cb)
 		  cb({
 		       status : status.codes.ok,
-		       object : self,
+		       object : self
 		     });
 	      });
+};
+
+resource.prototype.exec = function(data, cb){
+  var self = this;
+  if(!this._t)
+    this.full_init();  
+
+  if(this.methods){
+    if(this.methods.hasOwnProperty(data.method))
+      this.methods[data.method].call(this, data, cb);
+    else
+      cb({
+	   status : status.codes.resource_unexist,
+	   object : self
+	 });
+  } else 
+    cb({
+	 status : status.codes.resource_unexist,
+	 object : self
+       });
 };
 
 resource.prototype.dump = function(){
@@ -144,7 +170,7 @@ resource.prototype.dump = function(){
   object.container = this.container;
   object.data = this.data;
 
-  return JSON.stringify(object);
+  return JSON.stringify(object, null, 3);
 };
 
 resource.prototype.load = function(object){

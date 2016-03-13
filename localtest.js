@@ -19,10 +19,8 @@ function create_root(res, onfinish){
 	       if(res.status != status.codes.ok)
 		 return;
 	       var root = res.object;
-	       console.log('eeee');
 	       child_process.execSync('ls boxes/root > lsss');
 	       root.groups.request('create', token, 'first', undefined, function(res){
-				     console.log(res, 'dddd');
 				     root.users.request('create', token, 'ix', 
 							{ email : 'ix@2du.ru',
 							  password : '321'});
@@ -33,9 +31,13 @@ function create_root(res, onfinish){
 				   });
 	       
 	       root.boxes.request('create', token, 'uhaha', undefined, function(res){
-	       			    root.boxes.uhaha.users.request('create', token, 'ix', 
-								   { email : 'ix@2du.ruu', 
-	       							     password : '3214'});
+				    root.boxes.uhaha.groups.request('create', token, 'gix', function(res){
+	       							      root.boxes.uhaha.users.request('create', token, 'ix', 
+												     { email : 'ix@2du.ruu', 
+	       											       password : '3214'}, function(){
+													 root.boxes.uhaha.groups.gix.request('create', token, 'ix', null);
+												       });
+								    });
 	       			    root.boxes.uhaha.users.request('create', token, 'ixeg', 
 								   { email : 'ix@3du.ru', 
 	       							     password : '1235'});
@@ -60,7 +62,6 @@ function check1_root(res, onfinish){
 								       res.object.data.email == 'ix@2du.ru' &&
 								       res.object.data.password == '321');
 							});
-				     console.log(res);
 				     root.groups.first.users.request('read', token, 'ix', undefined, 
 								     function(res){
 								       print_status('   ix', res, true);
@@ -113,18 +114,19 @@ function modify_root(res, onfinish){
 				   });
 
 	       root.boxes.request('read', token, 'uhaha', undefined, function(res){
-	       			    root.boxes.uhaha.users.request('write', token, 'ix', 
-								   { email : 'haha',
-								     signal : 'trulala' });
-	       			    root.boxes.uhaha.users.request('write', token, 'ixeg', 
-								   { nick : 'petya',
-								     login : 'vasya' });
+				    var users = root.boxes.uhaha.users;
+	       			    users.request('write', token, 'ix', 
+						  { email : 'haha',
+						    signal : 'trulala' });
+	       			    users.request('write', token, 'ixeg', 
+						  { nick : 'petya',
+						    login : 'vasya' });
 				  });
 	     });  
 }
 
 function check2_root(res){
-  console.log('cheking modified root');  
+  console.log('cheking login, logout and rights root');  
   var bs = new boxes.folder('boxes');
   bs.request('read', token, 'root', undefined, function(res){
 	       print_status('root', res, true);
@@ -132,11 +134,11 @@ function check2_root(res){
 	       root.groups.request('read', token, 'first', undefined, function(res){
 				     print_status(' first', res, true);
 				     root.users.request('read', token, 'ix', undefined, function(res){
-							  print_status('  ix', res, 'deleted');
+							  print_status('  user ix', res, 'deleted');
 							});
 				     root.groups.first.users.request('read', token, 'ix', undefined,
 								     function(res){
-								       print_status('  ix', res, 'deleted');
+								       print_status('  group user ix', res, 'deleted');
 								     });
 				     root.groups.first.rights.request('read', token, 'first', undefined,
 								      function(res){
@@ -172,6 +174,24 @@ function check2_root(res){
 	     });  
 }
 
+function check_access(res){
+  console.log('cheking login, logout and rights root');  
+  var bs = new boxes.folder('boxes');
+  bs.request('read', token, 'root', undefined, function(res){  
+	       print_status('root', res, true);
+	       var root = res.object;
+	       root.boxes.request('read', token, 'uhaha', undefined, function(res){
+				    print_status(' uhaha', res, true);
+				    root.boxes.uhaha.users.request('exec', token, 'ixeg', { method : 'login', password : 1235 }, function(res){
+								     print_status('  ixeg login', res, true);
+								   });
+				  });
+	     });
+}
+
+//users/ixeg/rights/gvasya "rwx"
+//users/ixeg/login
+
 function walk_and_print(node, offset){
   console.log(offset + node.name);    
   var ind;
@@ -182,17 +202,21 @@ function walk_and_print(node, offset){
 
 create_root();
 
+//setTimeout(function(){
+//	     check1_root();
+//}, 1000);
+
+//setTimeout(function(){
+//	     modify_root();
+//}, 2000);
+
+//setTimeout(function(){
+//	     check2_root();
+//}, 4000);
+
 setTimeout(function(){
-	     check1_root();
+	     check_access();
 }, 1000);
-
-setTimeout(function(){
-	     modify_root();
-}, 2000);
-
-setTimeout(function(){
-	     check2_root();
-}, 4000);
 //walk_and_print(root, ' ');
 
 /*
