@@ -1,5 +1,5 @@
 /*
- * Test and example for the local(direct) rest api without layers like sokets or http
+ * Test and example for the local(direct) rest api without layers like sockets or http
  */
 
 var path = require('path'),
@@ -7,65 +7,22 @@ var path = require('path'),
     boxes = require('./modules/boxes'),
     status = require('./modules/status'),
    
-    cli = require('./cli.js');
+    cli = require('./cli.js'),
+    child_process = require('child_process');
 
-function query(root){
-  this.root = root;
-}
 
-function detect_type(prev, part){
-  if(prev._t == 'r' && typeof prev.methods[part] == 'function')
-    return 'm';
-  if(prev._t == 'f' && prev[part]._t == 'r')
-    return 'r'; //resource
-  if(prev.hasOwnProperty(part) && prev[part]._t == 'f')
-    return 'f'; //folder
-
-  return 0; //method or anything else:D
-}
-
-query.prototype.process = function(method, token, query, data, cb){
-  var parts = query.split(path.sep), ind = 0,
-  prev_elem = this.root;
-  parts.shift();
-
-  (function parse_part_rec(parts, ind, prev_elem, cur_method){
-     var part = parts[ind], args;
-     //	 console.log(part, prev_elem._t, prev_elem[part]['_t'], detect_type(prev_elem, part));
-     switch(detect_type(prev_elem, part)){
-     case 'r' : //resource
-       console.log('resource: ', part);
-       prev_elem.request(cur_method, token, part, data, function(obj){
-			   prev_elem = obj;
-			   parse_part_rec(parts, ++ind, prev_elem, cur_method);
-			 });
-       break;
-       
-     case 'f': //folder
-       prev_elem = prev_elem[part];
-       console.log('folder: ', part);
-       parse_part_rec(parts, ++ind, prev_elem, cur_method);
-       break;
-       
-     case 'm' : //method
-       console.log('method: ', part);
-       prev_elem.method_request(method, token, part, data, cb);
-     case 0 : //error, it is cannot be here
-     }
-   })(parts, ind, prev_elem, 'read');
-};
-
-var token = 'admin'; //this is woked for locally linked resources only. Such token will cause an error with query processor
+var token = 'admin'; //this is worked for locally linked resources only. Such token will cause an error with query processor
 
 function create_root(res, onfinish){
   var bs = new boxes.folder('boxes');
   bs.request('create', token, 'root', undefined, function(res){
-	       console.log('create root status:', res.status);
 	       if(res.status != status.codes.ok)
 		 return;
-
 	       var root = res.object;
+	       console.log('eeee');
+	       child_process.execSync('ls boxes/root > lsss');
 	       root.groups.request('create', token, 'first', undefined, function(res){
+				     console.log(res, 'dddd');
 				     root.users.request('create', token, 'ix', 
 							{ email : 'ix@2du.ru',
 							  password : '321'});
@@ -103,6 +60,7 @@ function check1_root(res, onfinish){
 								       res.object.data.email == 'ix@2du.ru' &&
 								       res.object.data.password == '321');
 							});
+				     console.log(res);
 				     root.groups.first.users.request('read', token, 'ix', undefined, 
 								     function(res){
 								       print_status('   ix', res, true);
@@ -247,7 +205,7 @@ _boxes.request('read', token, 'root', undefined, check2_root);
 
 //root.boxes.uhaha.users.ixeg.login({ uhaha : 'uhahatushki'});
 //console.log(root.boxes.uhaha);
-var q = new query(root);
+//var q = new query(root);
 
 //console.log(root.boxes.uhaha.users);
 

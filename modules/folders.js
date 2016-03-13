@@ -1,4 +1,7 @@
-var status = require('./status');
+var resource = require('./resource'),
+    status = require('./status'),
+
+    fs = require('fs');
 
 ////////////////////////////////////////////////////
 //PROTO folder, prototype for all folder types like boxes, users, groups or built-in folders
@@ -6,9 +9,10 @@ function folder(){
     this._t = 'f';
 }
 
+folder.prototype = new resource();
+
 function create_dir_if_none(path){
   try{
-    //console.log(path);
     fs.mkdirSync(path);
   } catch (x) {
 //    console.log(x, path);
@@ -113,4 +117,4 @@ bfolder.prototype.list = function(name, data, cb){
 };
 
 exports.folder = folder;
-exports.builtin_folder = bfolder;
+exports.builtin_folder = resource.prototype.builtin_folder = bfolder;

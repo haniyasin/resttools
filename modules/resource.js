@@ -14,10 +14,6 @@ var fs = require('fs'),
 function resource(){
 }
 
-//hack to work around cyclic require
-var folders = require('./folders');
-folders.folder.prototype = new resource();
-
 /*
  *path resolve over parents
  * 
@@ -40,7 +36,7 @@ resource.prototype.fast_init = function(name, parent){
     this.container = {};
     this.parent = parent;
     
-    this.container_add('rights', folders.builtin_folder);
+    this.container_add('rights', this.builtin_folder);
 };
 
 resource.prototype.full_init = function(){

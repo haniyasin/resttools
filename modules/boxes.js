@@ -28,8 +28,8 @@ box.prototype._full_init = function(){
 };
 
 function folder(name, parent){
-    this.type = box;
-    this.folder_init(name, parent);
+  this.type = box;
+  this.folder_init(name, parent);
 }
 
 folder.prototype = new folders.folder();
